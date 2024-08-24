@@ -4,42 +4,59 @@ document.addEventListener("DOMContentLoaded", function() {
     const answerInput = document.getElementById('answer-input');
     const flashcardContainer = document.getElementById('flashcard-container');
 
+    // Function to create a flashcard element
+    function createFlashcard(question, answer) {
+        const flashcard = document.createElement('div');
+        flashcard.className = 'flashcard';
+
+        const flashcardInner = document.createElement('div');
+        flashcardInner.className = 'flashcard-inner';
+
+        const flashcardFront = document.createElement('div');
+        flashcardFront.className = 'flashcard-front';
+        flashcardFront.textContent = question;
+
+        const flashcardBack = document.createElement('div');
+        flashcardBack.className = 'flashcard-back';
+        flashcardBack.textContent = answer;
+
+        flashcardInner.appendChild(flashcardFront);
+        flashcardInner.appendChild(flashcardBack);
+        flashcard.appendChild(flashcardInner);
+
+        // Add event listener to toggle answer on click
+        flashcard.addEventListener('click', function() {
+            flashcard.classList.toggle('show-answer');
+        });
+
+        flashcardContainer.appendChild(flashcard);
+    }
+
+    // Load flashcards from LocalStorage
+    function loadFlashcards() {
+        const flashcards = JSON.parse(localStorage.getItem('flashcards')) || [];
+        flashcards.forEach(({ question, answer }) => createFlashcard(question, answer));
+    }
+
+    // Save flashcards to LocalStorage
+    function saveFlashcards() {
+        const flashcards = [];
+        flashcardContainer.childNodes.forEach(flashcard => {
+            const question = flashcard.querySelector('.flashcard-front').textContent;
+            const answer = flashcard.querySelector('.flashcard-back').textContent;
+            flashcards.push({ question, answer });
+        });
+        localStorage.setItem('flashcards', JSON.stringify(flashcards));
+    }
+
+    // Add flashcard button event
     addBtn.addEventListener('click', function() {
         const question = questionInput.value.trim();
         const answer = answerInput.value.trim();
 
         if (question && answer) {
-            // Create a new flashcard div
-            const flashcard = document.createElement('div');
-            flashcard.className = 'flashcard';
-
-            // Create inner div for 3D effect
-            const flashcardInner = document.createElement('div');
-            flashcardInner.className = 'flashcard-inner';
-
-            // Create front and back divs
-            const flashcardFront = document.createElement('div');
-            flashcardFront.className = 'flashcard-front';
-            flashcardFront.textContent = question;
-
-            const flashcardBack = document.createElement('div');
-            flashcardBack.className = 'flashcard-back';
-            flashcardBack.textContent = answer;
-
-            // Append front and back to inner div
-            flashcardInner.appendChild(flashcardFront);
-            flashcardInner.appendChild(flashcardBack);
-
-            // Append inner div to flashcard
-            flashcard.appendChild(flashcardInner);
-
-            // Add event listener to toggle answer on click
-            flashcard.addEventListener('click', function() {
-                flashcard.classList.toggle('show-answer');
-            });
-
-            // Append the flashcard to the container
-            flashcardContainer.appendChild(flashcard);
+            createFlashcard(question, answer);
+            saveFlashcards();
 
             // Clear the input fields
             questionInput.value = '';
@@ -48,4 +65,7 @@ document.addEventListener("DOMContentLoaded", function() {
             alert("Please enter both a question and an answer.");
         }
     });
+
+    // Load existing flashcards when the page loads
+    loadFlashcards();
 });
